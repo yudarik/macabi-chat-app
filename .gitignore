@@ -1,6 +1,10 @@
 # Node.js
-node_modules/
+server/node_modules/
+webapp/node_modules/
 
 # Build files
 build/
 dist/
+
+# IDE files
+.idea/
