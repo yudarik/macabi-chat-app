@@ -1,17 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import io, {Socket} from 'socket.io-client';
 import {Message, Message_row} from "./message_row";
+import {useAuth} from "./auth_provider";
 
 
 export default function Chat() {
-    const [room, setRoom] = useState<string>('');
+    const {user} = useAuth();
+    const [room, setRoom] = useState<string>('main');
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputMessage, setInputMessage] = useState('');
     const [socket, setSocket] = useState<Socket | null>(null);
 
-
     const joinRoom = () => {
-        socket?.emit('joinRoom', room);
+        socket?.emit('joinRoom', room as any);
     };
 
     const sendMessage = (event) => {
@@ -20,20 +21,27 @@ export default function Chat() {
         socket?.emit('message', {
             room,
             content: inputMessage
-        });
+        } as any);
         setInputMessage('');
     };
 
     useEffect(() => {
-        setSocket(
-            io('http://localhost:8000', {
-                transports: ['websocket'],
-            })
-        );
-        // log when connected
+        const soc = io('http://localhost:8000', {
+            autoConnect: true,
+            transports: ['websocket'],
+        })
+        setSocket(soc);
+    }, []);
+
+    useEffect(() => {
+        //socket?.connect();
+
         socket?.on('connect', () => {
             console.log('connected to server');
+            socket?.emit('addUser', user as any);
+            joinRoom();
         });
+
         socket?.on('message', (msg) => {
             console.log('received message', msg);
             setMessages(prevMessages => [
@@ -45,7 +53,7 @@ export default function Chat() {
         return () => {
           socket?.disconnect();
         };
-    }, []);
+    }, [socket]);
 
   return (
     <div className={'card flex w-full absolute top-0 bottom-0 left-0 right-0'}>

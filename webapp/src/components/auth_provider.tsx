@@ -6,6 +6,8 @@ import request from "../protocols/api";
 
 interface IAuthContext {
   isAuthenticated: boolean;
+  user: string,
+  authToken: string,
   onRegister: ({username, password}, onErrorCallback) => void;
   onLogin: ({username, password}) => void;
   onLogout: () => void;
@@ -13,6 +15,8 @@ interface IAuthContext {
 
 const AuthContext = createContext<IAuthContext>({
     isAuthenticated: false,
+    user: '',
+    authToken: '',
     onRegister: () => {},
     onLogin: () => {},
     onLogout: () => {},
@@ -71,6 +75,8 @@ export function AuthProvider({ children }) {
 
   const value = {
     isAuthenticated,
+    user,
+    authToken,
     onRegister: handleRegister,
     onLogin: handleLogin,
     onLogout: handleLogout,
