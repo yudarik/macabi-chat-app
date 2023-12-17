@@ -7,28 +7,31 @@ export function UserRegister({ onRegister }) {
     confirmPassword: '',
   });
 
-  const [passwordMatchError, setPasswordMatchError] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setPasswordMatchError(''); // Reset error when user types
+    setErrorMsg(''); // Reset error when user types
   };
 
   const handleRegister = (event) => {
     event.preventDefault();
 
     if (!formData.password || !formData.confirmPassword) {
-        setPasswordMatchError('Password and Confirm Password are required');
+        setErrorMsg('Password and Confirm Password are required');
         return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setPasswordMatchError('Password and Confirm Password does not match');
+      setErrorMsg('Password and Confirm Password does not match');
       return;
     }
-    onRegister({ username: formData.username, password: formData.password }, (err) => {
+    onRegister({ username: formData.username, password: formData.password }, (successMsg: string) => {
+        setSuccessMsg(successMsg);
+    }, (err) => {
         if (err) {
-            setPasswordMatchError(err.message);
+            setErrorMsg(err.message);
         } else {
             setFormData({
                 username: '',
@@ -71,7 +74,8 @@ export function UserRegister({ onRegister }) {
           onChange={handleChange}
           className="w-full border rounded p-2 focus:outline-none focus:ring focus:border-blue-300"
         />
-        {passwordMatchError && <p className="text-red-500">{passwordMatchError}</p>}
+        {errorMsg && <p className="text-red-500">{errorMsg}</p>}
+        {successMsg && <p className="text-green-500">{successMsg}</p>}
       </div>
       <button onClick={handleRegister} className="bg-blue-500 text-white p-2 rounded">Register</button>
     </div>

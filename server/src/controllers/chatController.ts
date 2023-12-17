@@ -10,7 +10,7 @@ export interface ChatData {
 export class ChatSocket {
 
     private io: Server;
-    private users: Map<string, {id: string, username: string}>;
+    private readonly users: Map<string, {id: string, username: string}>;
 
     constructor(server: HttpServer) {
         this.io = new Server(server)

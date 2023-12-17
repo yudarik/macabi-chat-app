@@ -1,12 +1,29 @@
 import React, { useState } from 'react';
 
 export function UserLogin({ onLogin }) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+  });
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrorMsg(''); // Reset error when user types
+  };
 
   const handleLogin = () => {
     // You should perform validation here before calling onLogin
-    onLogin({ username, password });
+    onLogin({ username: formData.username, password: formData.password }, (err) => {
+        if (err) {
+            setErrorMsg(err.message);
+        } else {
+            setFormData({
+                username: '',
+                password: '',
+            });
+        }
+    });
   };
 
   return (
@@ -16,19 +33,22 @@ export function UserLogin({ onLogin }) {
         <label className="block text-gray-700 text-sm font-bold mb-2">Username:</label>
         <input
           type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          className="w-full border rounded p-2 focus:outline-none focus:ring focus:border-blue-300"
+          name="username"
+          value={formData.username}
+          onChange={handleChange}
+          className="w-full border rounded p-2 focus:outline-none focus:ring focus:border-blue-300 bg-back-800"
         />
       </div>
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">Password:</label>
         <input
           type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border rounded p-2 focus:outline-none focus:ring focus:border-blue-300"
+          name="password"
+          value={formData.password}
+          onChange={handleChange}
+          className="w-full border rounded p-2 focus:outline-none focus:ring focus:border-blue-300 bg-back-800"
         />
+       {errorMsg && <p className="text-red-500">{errorMsg}</p>}
       </div>
       <button onClick={handleLogin} className="bg-blue-500 text-white p-2 rounded">Login</button>
     </div>

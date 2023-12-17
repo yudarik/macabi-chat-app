@@ -4,7 +4,7 @@ import {UserLogin} from '../components/user_login';
 import {useAuth} from "./auth_provider";
 
 export function UserAuthentication() {
-  const [isRegistering, setIsRegistering] = useState(true);
+  const [isRegistering, setIsRegistering] = useState(false);
   const {onLogin, onRegister} = useAuth();
 
   return (

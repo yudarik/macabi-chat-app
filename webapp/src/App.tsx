@@ -16,15 +16,15 @@ const NoMatch = () => {
 const Navigation = () => {
   const { isAuthenticated, onLogout } = useAuth();
   return (
-    <nav>
-      <NavLink to="/">Home</NavLink>
-      <NavLink to="/chat">Chat</NavLink>
-      {isAuthenticated && (
-        <button type="button" onClick={onLogout}>
-          Sign Out
-        </button>
-      )}
-    </nav>
+      <div className={'absolute top-0 w-full z-10'}>
+        <nav className={'flex justify-end border-b-2 border-gray-500'}>
+          {isAuthenticated && (
+            <button type="button" className='' onClick={onLogout}>
+              Sign Out
+            </button>
+          )}
+        </nav>
+      </div>
   );
 };
 

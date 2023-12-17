@@ -28,15 +28,15 @@ const registerUser = asyncHandler(async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
-    res.status(400);
-    throw new Error("Please Enter all the Feilds");
+    res.status(400).json({ message: "Please Enter all the Feilds" });
+    return;
   }
 
   const userExists = await User.findOne({ username });
 
   if (userExists) {
-    res.status(400);
-    throw new Error("User already exists");
+    res.status(400).json({ message: "User already exists, please login" });
+    return;
   }
 
   const user = await User.create({
@@ -50,8 +50,7 @@ const registerUser = asyncHandler(async (req, res) => {
       username: user.username,
     });
   } else {
-    res.status(400);
-    throw new Error("User not found");
+    res.status(400).json({message: "User not found"});
   }
 });
 

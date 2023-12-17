@@ -8,8 +8,8 @@ interface IAuthContext {
   isAuthenticated: boolean;
   user: string,
   authToken: string,
-  onRegister: ({username, password}: {username: string, password: string}, onErrorCallback: (err: Error) => void) => void;
-  onLogin: ({username, password}: {username: string, password: string}) => void;
+  onRegister: ({username, password}: {username: string, password: string}, onSuccess: (msg: string) => void, onError: (err: Error) => void) => void;
+  onLogin: ({username, password}: {username: string, password: string}, onError: (err: Error) => void) => void;
   onLogout: () => void;
 }
 
@@ -43,17 +43,18 @@ export function AuthProvider({ children }) {
     }
   }, [localStorage.getItem('auth')]);
 
-  const handleRegister = async ({username, password}: {username: string, password: string}, onError: (err: Error) => void) => {
+  const handleRegister = async ({username, password}: {username: string, password: string},
+                                onSuccess: (msg: string) => void, onError: (err: Error) => void) => {
     try {
       const response = await request.post('/auth/register', {username, password});
-      await handleLogin({username, password});
+      onSuccess('Successfully registered!');
     } catch (err) {
-      console.error(err);
-      onError(err as Error);
+        console.log(err);
+      onError(err.response.data);
     }
   }
 
-  const handleLogin = async ({username, password}: {username: string, password: string}) => {
+  const handleLogin = async ({username, password}: {username: string, password: string}, onError: (err: Error) => void) => {
     // Perform login logic and set isAuthenticated to true upon successful login
     try {
         const response = await request.post('/auth/login', {username, password});
@@ -61,16 +62,16 @@ export function AuthProvider({ children }) {
             username,
             token: response.data.token,
         }));
-        //navigate(location?.state?.from ? location.state.from?.pathname : '/');
         const origin = location.state?.from?.pathname || '/chat';
         navigate(origin);
     } catch (err) {
-        console.error(err);
+        onError(err.response.data);
     }
   };
 
   const handleLogout = () => {
     localStorage.removeItem('auth');
+    navigate('/');
   };
 
   const value = {
