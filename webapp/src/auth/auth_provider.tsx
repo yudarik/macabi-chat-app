@@ -1,15 +1,15 @@
 import {
   useNavigate, useLocation,
 } from 'react-router-dom';
-import {createContext, useContext, useMemo, useState, useEffect} from "react";
+import {createContext, useContext, useMemo} from "react";
 import request from "../protocols/api";
 
 interface IAuthContext {
   isAuthenticated: boolean;
   user: string,
   authToken: string,
-  onRegister: ({username, password}, onErrorCallback) => void;
-  onLogin: ({username, password}) => void;
+  onRegister: ({username, password}: {username: string, password: string}, onErrorCallback: (err: Error) => void) => void;
+  onLogin: ({username, password}: {username: string, password: string}) => void;
   onLogout: () => void;
 }
 
@@ -43,17 +43,17 @@ export function AuthProvider({ children }) {
     }
   }, [localStorage.getItem('auth')]);
 
-  const handleRegister = async ({username, password}, onError) => {
+  const handleRegister = async ({username, password}: {username: string, password: string}, onError: (err: Error) => void) => {
     try {
       const response = await request.post('/auth/register', {username, password});
       await handleLogin({username, password});
     } catch (err) {
       console.error(err);
-      onError(err);
+      onError(err as Error);
     }
   }
 
-  const handleLogin = async ({ username, password }) => {
+  const handleLogin = async ({username, password}: {username: string, password: string}) => {
     // Perform login logic and set isAuthenticated to true upon successful login
     try {
         const response = await request.post('/auth/login', {username, password});

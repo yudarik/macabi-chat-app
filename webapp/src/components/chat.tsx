@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import io, {Socket} from 'socket.io-client';
 import {Message, Message_row} from "./message_row";
-import {useAuth} from "./auth_provider";
+import {useAuth} from "../auth/auth_provider";
 
 
 export default function Chat() {

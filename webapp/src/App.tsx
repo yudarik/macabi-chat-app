@@ -1,8 +1,8 @@
 import {BrowserRouter as Router, Routes, Route, NavLink} from 'react-router-dom';
 
 import Chat from "./components/chat";
-import Auth from "./components/auth";
-import {AuthProvider, useAuth} from "./components/auth_provider";
+import {UserAuthentication} from "./auth/user_authentication";
+import {AuthProvider, useAuth} from "./auth/auth_provider";
 import {ProtectedRoute} from "./components/protected_route";
 
 const NoMatch = () => {
@@ -35,8 +35,8 @@ const App = () => {
           <AuthProvider>
             <Navigation />
             <Routes>
-              <Route index element={<Auth />} />
-              <Route path="auth" element={<Auth />} />
+              <Route index element={<UserAuthentication />} />
+              <Route path="auth" element={<UserAuthentication />} />
               <Route path="chat" element={
                   <ProtectedRoute>
                     <Chat />

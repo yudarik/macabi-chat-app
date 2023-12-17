@@ -1,9 +1,9 @@
 import React, {useState} from 'react';
-import {UserRegister} from './user_register';
-import {UserLogin} from './user_login';
+import {UserRegister} from '../components/user_register';
+import {UserLogin} from '../components/user_login';
 import {useAuth} from "./auth_provider";
 
-const Auth = () => {
+export function UserAuthentication() {
   const [isRegistering, setIsRegistering] = useState(true);
   const {onLogin, onRegister} = useAuth();
 
@@ -43,6 +43,4 @@ const Auth = () => {
       </div>
     </div>
   );
-};
-
-export default Auth;
+}

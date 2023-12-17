@@ -1,43 +1,46 @@
-import {Server} from "socket.io";
+import {Server, Socket} from "socket.io";
 import {Room} from "socket.io-adapter";
 import {Server as HttpServer} from "http";
 
+export interface ChatData {
+    room: Room;
+    content: string;
+}
 
-const createChatServer = (server: HttpServer) => {
+export class ChatSocket {
 
-    const io = new Server(server);
+    private io: Server;
+    private users: Map<string, {id: string, username: string}>;
 
-    const users = new Map<string, { id: string; username: string }>();
-
-    interface ChatData {
-        room: Room;
-        content: string;
+    constructor(server: HttpServer) {
+        this.io = new Server(server)
+        this.users = new Map();
     }
 
-    io.on('connection',(socket) => {
+    private socketConnectionHandler = (socket: Socket) => {
         console.log('User connected:', socket.id);
 
         // Add user
         socket.on('addUser', (username: string) => {
             console.log('user joined:', username)
-            users.set(socket.id, {id: socket.id, username});
-            io.emit('getUsers', Object.values(users));
+            this.users.set(socket.id, {id: socket.id, username});
+            this.io.emit('getUsers', Object.values(this.users));
         });
 
         // Get user
         socket.on('getUser', () => {
-            io.to(socket.id).emit('getUser', users.get(socket.id));
+            this.io.to(socket.id).emit('getUser', this.users.get(socket.id));
         });
 
         // Get users
         socket.on('getUsers', () => {
-            io.to(socket.id).emit('getUsers', Object.values(users));
+            this.io.to(socket.id).emit('getUsers', Object.values(this.users));
         });
 
         // Delete user
         socket.on('deleteUser', () => {
-            users.delete(socket.id);
-            io.emit('getUsers', Object.values(users));
+            this.users.delete(socket.id);
+            this.io.emit('getUsers', Object.values(this.users));
         });
 
         // Join room
@@ -55,8 +58,8 @@ const createChatServer = (server: HttpServer) => {
         socket.on('message', (data: ChatData) => {
             console.log('message received', data);
             try {
-                io.to(data.room).emit('message', {
-                    sender: users.get(socket.id),
+                this.io.to(data.room).emit('message', {
+                    sender: this.users.get(socket.id),
                     content: data.content,
                 });
             } catch (error) {
@@ -66,11 +69,14 @@ const createChatServer = (server: HttpServer) => {
 
         // Disconnect event
         socket.on('disconnect', () => {
-            users.delete(socket.id);
-            io.emit('getUsers', Object.values(users));
+            this.users.delete(socket.id);
+            this.io.emit('getUsers', Object.values(this.users));
             console.log('User disconnected:', socket.id);
         });
-    });
-}
+    }
 
-export {createChatServer}
+    public listen() {
+        this.io.on('connection', this.socketConnectionHandler);
+    }
+
+}
