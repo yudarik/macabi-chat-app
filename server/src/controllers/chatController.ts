@@ -1,46 +1,64 @@
 import {Server, Socket} from "socket.io";
-import {Room} from "socket.io-adapter";
 import {Server as HttpServer} from "http";
+import User from "../models/userModel";
 
-export interface ChatData {
-    room: Room;
+export interface Message {
+    room: string;
+    sender: string;
     content: string;
+    timestamp: Date;
+}
+
+export interface IConnectedUser {
+    userId: string,
+    socketId: string,
+    username: string
 }
 
 export class ChatSocket {
 
     private io: Server;
-    private readonly users: Map<string, {id: string, username: string}>;
+    private readonly usersById: Map<string, IConnectedUser>;
+    private readonly usersBySocket: Map<string, IConnectedUser>;
 
     constructor(server: HttpServer) {
         this.io = new Server(server)
-        this.users = new Map();
+        this.usersById = new Map();
+        this.usersBySocket = new Map();
+        this.io.sockets.adapter.rooms.clear();
     }
 
     private socketConnectionHandler = (socket: Socket) => {
         console.log('User connected:', socket.id);
 
         // Add user
-        socket.on('addUser', (username: string) => {
-            console.log('user joined:', username)
-            this.users.set(socket.id, {id: socket.id, username});
-            this.io.emit('getUsers', Object.values(this.users));
-        });
-
-        // Get user
-        socket.on('getUser', () => {
-            this.io.to(socket.id).emit('getUser', this.users.get(socket.id));
+        socket.on('addUser', async (data: { id: string, username: string }) => {
+            console.log('user joined:', data);
+            // get user by name from DB
+            const user = await User.findOne({ username: data.username });
+            if (!user) {
+                console.log('user not found');
+                return;
+            }
+            const userObj = {
+                userId: user.id,
+                socketId: socket.id,
+                username: user.username,
+            };
+            this.usersById.set(user.id, userObj);
+            this.usersBySocket.set(socket.id, userObj);
+            this.io.emit('getUsers', Array.from(this.usersById.values()) as any);
         });
 
         // Get users
         socket.on('getUsers', () => {
-            this.io.to(socket.id).emit('getUsers', Object.values(this.users));
+            this.io.to(socket.id).emit('getUsers', Array.from(this.usersById.values()) as any);
         });
 
         // Delete user
-        socket.on('deleteUser', () => {
-            this.users.delete(socket.id);
-            this.io.emit('getUsers', Object.values(this.users));
+        socket.on('deleteUser', (userId: string) => {
+            this.usersById.delete(userId);
+            this.io.emit('getUsers', Array.from(this.usersById.values()) as any);
         });
 
         // Join room
@@ -54,14 +72,20 @@ export class ChatSocket {
             socket.leave(room);
         });
 
+        // Get rooms
+        socket.on('getRooms', () => {
+            console.log('getRooms called');
+            // Get all rooms
+            const roomNames = Array.from(this.io.sockets.adapter.rooms.keys());
+            console.log('available rooms:', roomNames);
+            this.io.to(socket.id).emit('getRooms', roomNames);
+        });
+
         // Message event
-        socket.on('message', (data: ChatData) => {
-            console.log('message received', data);
+        socket.on('message', (msg: Message) => {
+            console.log('message received', msg);
             try {
-                this.io.to(data.room).emit('message', {
-                    sender: this.users.get(socket.id),
-                    content: data.content,
-                });
+                this.io.to(msg.room).emit('message', msg);
             } catch (error) {
                 console.log(error);
             }
@@ -69,8 +93,8 @@ export class ChatSocket {
 
         // Disconnect event
         socket.on('disconnect', () => {
-            this.users.delete(socket.id);
-            this.io.emit('getUsers', Object.values(this.users));
+            this.usersBySocket.delete(socket.id);
+            this.io.emit('getUsers', Array.from(this.usersById.values()) as any);
             console.log('User disconnected:', socket.id);
         });
     }

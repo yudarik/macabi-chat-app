@@ -1,49 +1,26 @@
-import {Message, Message_row} from "./message_row";
+import {Message, MessageRow} from "./message_row";
 import React, {useEffect, useState} from "react";
 import {IChatContext, useChat} from "./chat_provider";
-import {useAuth} from "../auth/auth_provider";
+import {useParams} from "react-router-dom";
 
 
-export function ChatRoom() {
-    const {user} = useAuth();
-    const {socket, sendMessage} = useChat<IChatContext>();
-
-    const [room, setRoom] = useState<string>('main');
-    const [messages, setMessages] = useState<Message[]>([]);
+export function ChatRoom(props: {messages: Message[]}) {
+    const {messages} = props;
+    const {sendMessage} = useChat<IChatContext>();
+    const { room_name } = useParams();
     const [inputMessage, setInputMessage] = useState('');
 
     const onSubmitHandler = (event) => {
         event.preventDefault();
-        sendMessage(room, user, inputMessage);
+        sendMessage(room_name, inputMessage);
         setInputMessage('');
     };
 
-    useEffect(() => {
-        console.log('connecting to server...');
-
-        socket?.on('connect', () => {
-            console.log('connected to server');
-            socket?.emit('addUser', user as any);
-            socket?.emit('joinRoom', room as any);
-        });
-
-        socket?.on('message', (msg) => {
-            console.log('received message', msg);
-            setMessages(prevMessages => [
-              ...prevMessages,
-              msg
-            ]);
-        });
-
-        return () => {
-          socket?.disconnect();
-        };
-    }, [socket]);
-
     return (
         <div className={'grow w-7/6 relative'}>
+            <h3>Room: {room_name}</h3>
             <ul className={'w-full'}>
-                {messages.map((msg, index) => <Message_row key={index} msg={msg} index={index} />)}
+                {messages.map((msg, index) => <MessageRow key={index} msg={msg} index={index} />)}
             </ul>
             <div className={'flex w-full h-30 absolute left-0 right-0 bottom-0'}>
                 <form onSubmit={onSubmitHandler} className={'w-full flex'}>

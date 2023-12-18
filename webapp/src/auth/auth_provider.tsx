@@ -6,7 +6,7 @@ import request from "../protocols/api";
 
 interface IAuthContext {
   isAuthenticated: boolean;
-  user: string,
+  user: {id: string, username: string}|null,
   authToken: string,
   onRegister: ({username, password}: {username: string, password: string}, onSuccess: (msg: string) => void, onError: (err: Error) => void) => void;
   onLogin: ({username, password}: {username: string, password: string}, onError: (err: Error) => void) => void;
@@ -15,7 +15,7 @@ interface IAuthContext {
 
 const AuthContext = createContext<IAuthContext>({
     isAuthenticated: false,
-    user: '',
+    user: null,
     authToken: '',
     onRegister: () => {},
     onLogin: () => {},
@@ -29,10 +29,10 @@ export function AuthProvider({ children }) {
   const {isAuthenticated, user, authToken} = useMemo(() => {
     const auth = localStorage.getItem('auth');
     if (auth) {
-      const {username, token} = JSON.parse(auth);
+      const {id, username, token} = JSON.parse(auth);
       return {
         isAuthenticated: true,
-        user: username,
+        user: {id, username},
         authToken: token,
       };
     }
@@ -59,7 +59,8 @@ export function AuthProvider({ children }) {
     try {
         const response = await request.post('/auth/login', {username, password});
         localStorage.setItem('auth', JSON.stringify({
-            username,
+            id: response.data.id,
+            username: response.data.username,
             token: response.data.token,
         }));
         const origin = location.state?.from?.pathname || '/chat';

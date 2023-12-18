@@ -36,8 +36,8 @@ const App = () => {
             <Navigation />
             <Routes>
               <Route index element={<UserAuthentication />} />
-              <Route path="auth" element={<UserAuthentication />} />
-              <Route path="chat" element={
+              <Route path="/auth" element={<UserAuthentication />} />
+              <Route path="/chat/:room_name?" element={
                   <ProtectedRoute>
                     <Chat />
                   </ProtectedRoute>
