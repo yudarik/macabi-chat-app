@@ -41,9 +41,9 @@ export class ChatSocket {
                 return;
             }
             const userObj = {
-                userId: user.id,
+                userId: user?.id,
                 socketId: socket.id,
-                username: user.username,
+                username: user?.username,
             };
             this.usersById.set(user.id, userObj);
             this.usersBySocket.set(socket.id, userObj);
