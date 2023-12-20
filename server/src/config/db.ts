@@ -4,7 +4,7 @@ import env from "./env";
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(env.mongo_uri, env.options as mongoose.ConnectOptions);
+    const conn = await mongoose.connect(env.mongo_uri, env.mongo_options as mongoose.ConnectOptions);
     const db = mongoose.connection;
 
     db.on('error', console.error.bind(console, 'MongoDB connection error:'));

@@ -4,7 +4,7 @@ import * as cors from 'cors';
 
 import routes from './routes';
 import connectDB from "./config/db";
-import {ChatSocket} from "./controllers/chatController";
+import {ChatService} from "./services/chatService";
 
 const corsOptions = {
   origin: 'http://localhost:3000', // Replace with your client URL
@@ -20,7 +20,7 @@ app.use('/api', routes);
 
 
 const server = http.createServer(app);
-const chat = new ChatSocket(server);
+const chat = new ChatService(server);
 
 const PORT = process.env.PORT || 8000;
 server.listen(PORT, () => {

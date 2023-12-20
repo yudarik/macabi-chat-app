@@ -17,6 +17,9 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: macabi
       MONGO_INITDB_ROOT_PASSWORD: NotS3cure!
+      MONGO_HOST: mongodb
+    depends_on:
+      - mongodb
 
   mongodb:
     image: mongo:latest
@@ -26,3 +29,4 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: macabi
       MONGO_INITDB_ROOT_PASSWORD: NotS3cure!
+      MONGO_INITDB_DATABASE: macabi

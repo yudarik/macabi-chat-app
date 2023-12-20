@@ -1,18 +1,12 @@
 
-
-const username = process.env.MONGO_INITDB_ROOT_USERNAME || 'root';
-const password = process.env.MONGO_INITDB_ROOT_PASSWORD || 'example';
-
-console.log('Username:', username);
-console.log('Password:', password);
-
+const mongo_host = process.env.MONGO_HOST || 'localhost'
 export default {
-    "mongo_uri": `mongodb://mongodb:27017/macabi-db`,
-    "options": {
+    "mongo_uri": `1`,
+    "mongo_options": {
         maxPoolSize: 10,
         authSource: "admin",
-        user: username,
-        pass: password,
+        user: process.env.MONGO_INITDB_ROOT_USERNAME,
+        pass: process.env.MONGO_INITDB_ROOT_PASSWORD,
         autoCreate: true,
         autoIndex: true,
     }
