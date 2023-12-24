@@ -1,5 +1,5 @@
 import * as express from "express";
-import {createRoom, getRooms, joinRoom, leaveRoom} from "../controllers/chatController";
+import {createRoom, getRooms, joinRoom, leaveRoom} from "../controllers/roomController";
 
 const router = express.Router();
 
