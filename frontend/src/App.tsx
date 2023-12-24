@@ -14,14 +14,17 @@ const NoMatch = () => {
 };
 
 const Navigation = () => {
-  const { isAuthenticated, onLogout } = useAuth();
+  const { isAuthenticated, user, onLogout } = useAuth();
   return (
     <div className={"absolute top-0 w-full z-10"}>
       <nav className={"flex justify-end border-b-2 border-gray-500"}>
         {isAuthenticated && (
-          <button type="button" className="" onClick={onLogout}>
-            Sign Out
-          </button>
+            <>
+                <span className={"p-4 text-white"}>Welcome {user?.username}</span>
+                <button type="button" className="" onClick={onLogout}>
+                    Sign Out
+                  </button>
+            </>
         )}
       </nav>
     </div>
@@ -37,7 +40,7 @@ const App = () => {
           <Route index element={<UserAuthentication />} />
           <Route path="/auth" element={<UserAuthentication />} />
           <Route
-            path="/chat/:room_name?"
+            path="/chat/:room_id?"
             element={
               <ProtectedRoute>
                 <Chat />

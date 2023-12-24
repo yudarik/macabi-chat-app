@@ -1,10 +1,11 @@
 import mongoose, { Schema } from "mongoose";
+import {ObjectId} from "bson";
 
-export interface IMessage extends Document {
+export interface IMessage {
     content: string;
-    from: string;
-    to: string;
-    room: string;
+    from: ObjectId;
+    to: ObjectId;
+    room: ObjectId;
     timestamp: Date;
 }
 

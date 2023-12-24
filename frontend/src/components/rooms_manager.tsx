@@ -1,6 +1,7 @@
-import { FormEvent, useState } from "react";
+import {FormEvent, useEffect, useState} from "react";
 import { Link, useParams } from "react-router-dom";
 import { IConnectedUser } from "./chat_orchestrator";
+import {IRoom, useChat} from "./chat_provider";
 
 export interface SocketUser {
   userId: string;
@@ -8,14 +9,30 @@ export interface SocketUser {
   username: string;
 }
 
-export function UserItem(user: SocketUser, index: number) {
-  const { room_name } = useParams();
+export function RoomItem(room: IRoom, index: number, is_active: boolean) {
 
   return (
     <li
       key={index}
       className={`p-4 hover:bg-gray-600 transition ${
-        user.socketId === room_name ? "bg-gray-500" : ""
+        is_active ? "bg-gray-500" : ""
+      }`}
+    >
+      <Link to={`/chat/${room._id}`} className="block">
+        <span className="text-lg font-medium text-white">{room.name}</span>
+      </Link>
+    </li>
+  );
+}
+
+export function UserItem(user: SocketUser, index: number) {
+  const { user_id } = useParams();
+
+  return (
+    <li
+      key={index}
+      className={`p-4 hover:bg-gray-600 transition ${
+        user.userId === user_id ? "bg-gray-500" : ""
       }`}
     >
       <Link to={`/chat/${user.socketId}`} className="block">
@@ -26,16 +43,16 @@ export function UserItem(user: SocketUser, index: number) {
 }
 
 export function RoomsManager(props: {
-  rooms: string[];
-  users: IConnectedUser[];
-  joinRoom: (room: string) => void;
+  rooms: IRoom[];
+  createRoom: (room_name: string) => void;
 }) {
-  const { rooms, users, joinRoom } = props;
+  const {room_id} = useParams<{ room_id: string }>();
   const [newRoom, setNewRoom] = useState<string>("");
+  const { rooms, createRoom } = props;
 
-  function addRoom(e: FormEvent<HTMLFormElement>) {
+  async function addRoom(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    joinRoom(newRoom);
+    createRoom(newRoom);
     setNewRoom("");
   }
 
@@ -65,30 +82,13 @@ export function RoomsManager(props: {
         </div>
         <div className="w-full">
           <ul className="divide-y divide-gray-200 flex-col">
-            {rooms.map(RoomItem)}
+            {rooms.map((room, i) => RoomItem(room, i, room._id === room_id))}
           </ul>
-          <ul className="border-t-2 border-gray-400 divide-y divide-gray-200 flex-col">
-            {users.map(UserItem)}
-          </ul>
+          {/*<ul className="border-t-2 border-gray-400 divide-y divide-gray-200 flex-col">*/}
+          {/*  {users.map(UserItem)}*/}
+          {/*</ul>*/}
         </div>
       </div>
     </div>
-  );
-}
-
-export function RoomItem(room: string, index: number) {
-  const { room_name } = useParams();
-
-  return (
-    <li
-      key={index}
-      className={`p-4 hover:bg-gray-600 transition ${
-        room === room_name ? "bg-gray-500" : ""
-      }`}
-    >
-      <Link to={`/chat/${room}`} className="block">
-        <span className="text-lg font-medium text-white">{room}</span>
-      </Link>
-    </li>
   );
 }

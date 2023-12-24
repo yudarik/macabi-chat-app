@@ -1,17 +1,18 @@
 import {Server, Socket} from "socket.io";
 import {Server as HttpServer} from "http";
+import {Room} from "../models/roomModel";
 import User from "../models/userModel";
 
 export interface Message {
-    room: string;
-    sender: string;
     content: string;
+    from: string;
+    to?: string;
+    room_id?: string;
     timestamp: Date;
 }
 
 export interface IConnectedUser {
-    userId: string,
-    socketId: string,
+    id: string,
     username: string
 }
 
@@ -29,26 +30,23 @@ export class ChatService {
     }
 
     private socketConnectionHandler = (socket: Socket) => {
-        console.log('new socket created:', socket.id);
-
         // Add user
-        // socket.on('addUser', async (data: { id: string, username: string }) => {
-        //     console.log('user joined:', data);
-        //     // get user by name from DB
-        //     const user = await User.findOne({ username: data.username });
-        //     if (!user) {
-        //         console.log('user not found');
-        //         return;
-        //     }
-        //     const userObj = {
-        //         userId: user?.id,
-        //         socketId: socket.id,
-        //         username: user?.username,
-        //     };
-        //     this.usersById.set(user.id, userObj);
-        //     this.usersBySocket.set(socket.id, userObj);
-        //     this.io.emit('getUsers', Array.from(this.usersById.values()) as any);
-        // });
+        socket.on('addUser', async (_id: string) => {
+            console.log('user joined:', _id);
+            // get user by name from DB
+            const user = await User.findOne({ _id });
+            if (!user) {
+                console.log('user not found');
+                return;
+            }
+            const userObj = {
+                id: user?._id.toString(),
+                username: user?.username,
+            };
+            this.usersById.set(user.id, userObj);
+            this.usersBySocket.set(socket.id, userObj);
+            this.io.emit('getUsers', Array.from(this.usersById.values()) as any);
+        });
 
         // Get users
         socket.on('getUsers', () => {
@@ -62,30 +60,34 @@ export class ChatService {
         });
 
         // Join room
-        socket.on('joinRoom', (room: string) => {
-            socket.join(room);
-            console.log(`User ${socket.id} joined room: ${room}`);
+        socket.on('joinRoom', (room_id: string) => {
+            socket.join(room_id);
+            //console.log(`User ${socket.id} joined room: ${room_id}`);
         });
+
+        // refresh rooms for all users
+        socket.on('refreshRooms', async () => {
+            const rooms = await Room.find({}).exec();
+            this.io.emit('getRooms', rooms as any);
+        });
+
+        // get Rooms
+        socket.on('getRooms', async () => {
+            const rooms = await Room.find({}).exec();
+            this.io.to(socket.id).emit('getRooms', rooms as any);
+        });
+
 
         // Leave room
-        socket.on('leaveRoom', (room: string) => {
-            socket.leave(room);
+        socket.on('leaveRoom', (room_id: string) => {
+            socket.leave(room_id);
         });
-
-        // Get rooms
-        // socket.on('getRooms', () => {
-        //     console.log('getRooms called');
-        //     // Get all rooms
-        //     const roomNames = Array.from(this.io.sockets.adapter.rooms.keys());
-        //     console.log('available rooms:', roomNames);
-        //     this.io.to(socket.id).emit('getRooms', roomNames);
-        // });
 
         // Message event
         socket.on('message', (msg: Message) => {
-            console.log('message received', msg);
+            //console.log('message received', msg);
             try {
-                this.io.to(msg.room).emit('message', msg);
+                this.io.to(msg.room_id as string).emit('message', msg);
             } catch (error) {
                 console.log(error);
             }

@@ -1,12 +1,15 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, {Schema} from 'mongoose';
+import {ObjectId} from "bson";
 
-const roomSchema = new mongoose.Schema({
+export interface IRoom {
+    _id: ObjectId;
+    name: string;
+    members: ObjectId[];
+}
+const roomSchema = new mongoose.Schema<IRoom>({
     name: { type: "String", required: true, unique: true },
-    users: [{ type: Schema.Types.ObjectId, ref: 'User', default: [] }],
-    messages: [{ type: Schema.Types.ObjectId, ref: 'Message', default: [] }],
+    members: [{ type: Schema.Types.ObjectId, ref: 'User', default: [] }],
 });
 
-const Room = mongoose.model("Room", roomSchema);
-
-export default Room;
+export const Room = mongoose.model("Room", roomSchema);
 

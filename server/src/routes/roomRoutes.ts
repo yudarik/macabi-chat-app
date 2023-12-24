@@ -3,9 +3,9 @@ import {createRoom, getRooms, joinRoom, leaveRoom} from "../controllers/roomCont
 
 const router = express.Router();
 
-router.get("/create", createRoom);
-router.post("/join", joinRoom);
+router.post("/create", createRoom);
 router.get("/all", getRooms);
-router.post("/leave", leaveRoom)
+router.post("/:room_id/join", joinRoom);
+router.post("/:room_id/leave", leaveRoom)
 
 export default router;

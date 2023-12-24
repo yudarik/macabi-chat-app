@@ -66,6 +66,7 @@ const loginUser = asyncHandler(async (req, res) => {
     res.status(401).json({ message: 'Invalid username or password' });
     return;
   }
+  console.log('user found, generating token');
 
   res.json({
     id: user.id,

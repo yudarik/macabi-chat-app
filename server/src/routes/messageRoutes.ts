@@ -3,8 +3,8 @@ import {addMessage, getMessages} from "../controllers/messageController";
 
 const router = express.Router();
 
-router.post("/:room", addMessage);
-router.get("/:room/all", getMessages);
+router.post("/:room_id", addMessage);
+router.get("/:room_id/all", getMessages);
 
 export default router;
 

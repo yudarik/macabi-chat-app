@@ -1,26 +1,35 @@
-import { Message, MessageRow } from "./message_row";
-import { FormEvent, useState } from "react";
+import { IMessage, MessageRow } from "./message_row";
+import {FormEvent, useEffect, useMemo, useState} from "react";
 import { useChat } from "./chat_provider";
 import { useParams } from "react-router-dom";
+import {IConnectedUser} from "../chat/chat_store";
 
-export function ChatRoom(props: { messages: Message[] }) {
-  const { messages } = props;
-  const { sendMessage } = useChat();
-  const { room_name } = useParams();
-  const [inputMessage, setInputMessage] = useState("");
+export function ChatRoom(props: {
+    msgCounter: number;
+    onMessageSend: (content: string) => void,
+}) {
+    const { room_id } = useParams();
+    const {chatStore} = useChat();
+    const [inputMessage, setInputMessage] = useState("");
+    const [messages, setMessages] = useState<IMessage[]>([]);
 
-  const onSubmitHandler = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    sendMessage(room_name ?? "", inputMessage);
-    setInputMessage("");
-  };
+    const onSubmitHandler = (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        props.onMessageSend(inputMessage);
+        setInputMessage("");
+    };
+
+    useEffect(() => {
+        setMessages(chatStore.getMessages(room_id));
+    }, [room_id, props.msgCounter])
 
   return (
     <div className={"grow w-7/6 relative"}>
-      <h3>Room: {room_name}</h3>
       <ul className={"w-full"}>
         {messages.map((msg, index) => (
-          <MessageRow key={index} msg={msg} index={index} />
+            <MessageRow
+                key={`${new Date(msg.timestamp).getMilliseconds()}_${index}`}
+                msg={msg} user={chatStore.getUser(msg.from)} />
         ))}
       </ul>
       <div className={"flex w-full h-30 absolute left-0 right-0 bottom-0"}>

@@ -16,7 +16,6 @@ export class ChatStoreService {
         this.messages = new Map();
     }
 
-
     public static getInstance(): ChatStoreService {
         if (!ChatStoreService.instance) {
             ChatStoreService.instance = new ChatStoreService();
@@ -32,21 +31,18 @@ export class ChatStoreService {
     }
 
     public addMessage(msg: IMessage) {
-        if (!(msg.room_id in this.messages.keys())) {
-            this.messages.set(msg.room_id as string, []);
-        }
-        this.messages.set(msg.room_id as string, [
-            ...this.messages.get(msg.room_id as string),
-            msg
-        ]);
+        const room_id = msg.room_id as string;
+        const msgs = this.messages.get(room_id) ?? [];
+        msgs.push(msg);
+        this.messages.set(room_id, msgs);
     }
 
     public getUser(id: string) {
-        return this.users.get(id);
+        return this.users.get(id) ?? null;
     }
 
     public getMessages(room_id: string) {
-        return this.messages.get(room_id);
+        return this.messages.get(room_id) ?? [];
     }
 
     public removeUser(id: string) {

@@ -14,19 +14,21 @@ const getRooms = async (req: Request, res: Response) => {
 }
 
 const joinRoom = async (req: Request, res: Response) => {
-    const { userId, room } = req.body;
+    const { room_id } = req.params;
+    const { userId } = req.body;
     try {
-        if (!userId || !room) {
+        if (!userId || !room_id) {
             res.status(400).send({message: 'no room or user id provided'});
             return;
         }
-        let instance = await Room.findOne({ name: room }).exec();
+        let instance = await Room.findOne({ _id: room_id }).populate('members').exec();
         if (!instance) {
-            instance = new Room({ name: room, users: [userId] });
+            res.status(404).send({ message: 'Room not found' });
+            return;
         }
         // add user to room
-        if (userId && instance.users.indexOf(userId) === -1) {
-            instance.users.push(userId);
+        if (userId && instance.members.indexOf(userId) === -1) {
+            instance.members.push(userId);
             await instance.save().then(() => {}, (err) => console.log.bind(console, `Error: ${err}`));
         }
         res.status(200).send({ message: 'Joined room' });
@@ -39,16 +41,17 @@ const joinRoom = async (req: Request, res: Response) => {
 
 const leaveRoom = async (req: Request, res: Response) => {
     console.log('Entered leaveRoom api handler')
-    const { userId, room } = req.body;
+    const { room_id } = req.params;
+    const { userId } = req.body;
     try {
-        const instance = await Room.findOne({ name: room }).exec();
+        const instance = await Room.findOne({ id: room_id }).populate('members').exec();
         if (!instance) {
             res.status(404).send({ message: 'Room not found' });
             return;
         }
         // remove user from room
-        if (userId && instance.users.indexOf(userId) !== -1) {
-            instance?.users.splice(room?.users.indexOf(userId), 1);
+        if (userId && instance.members.indexOf(userId) !== -1) {
+            instance?.members.splice(instance?.members.indexOf(userId), 1);
             await instance.save();
         }
         res.status(200).send({ message: 'Left room' });
